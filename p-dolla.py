@@ -91,6 +91,39 @@ class RuneScapeAPI:
                 data.extend(self.get(category, i["letter"], 1))
         return data
 
+class RuneScapeSkillScoreAPI:
+    endpoint = 'https://secure.runescape.com/m=hiscore/index_lite.ws?player='
+    r = requests.Session()
+    
+    skills = ['Overall', 'Attack', 'Defence', 'Strength', 'Constitution', 'Ranged', 'Prayer', 'Magic', 'Cooking', 'Woodcutting', 'Fletching', 'Fishing', 'Firemaking', 'Crafting', 'Smithing', 'Mining', 'Herblore', 'Agility', 'Thieving', 'Slayer', 'Farming', 'Runecrafting', 'Hunter', 'Construction', 'Summoning', 'Dungeoneering', 'Divination', 'Invention', 'Archaeology', "Bounty Hunter", "B.H. Rogues", "Dominion Tower", "The Crucible", "Castle Wars games", "B.A. Attackers", "B.A", "Defenders", "B.A. Collectors", "B.A. Healers", "Duel Tournament", "Mobilising Armies", "Conquest", "Fist of Guthix", "GG: Athletics", "GG: Resource Race", "WE2: Armadyl Lifetime Contribution", "WE2: Bandos Lifetime Contribution", "WE2: Armadyl PvP kills", "WE2: Bandos PvP kills", "Heist Guard Level", "Heist Robber Level", "CFP: 5 game average", "AF15: Cow Tipping", "AF15: Rats killed after the miniquest", "RuneScore", "Clue Scrolls Easy", "Clue Scrolls Medium", "Clue Scrolls Hard", "Clue Scrolls Elite", "Clue Scrolls Master"]
+
+    # def _index(self):
+    #     return self.r.get(f"{self.endpoint}" + self.player).text
+
+    def get_player_scores(self, player):
+        d = self.r.get(f"{self.endpoint}{player}")
+        rd = d.text.split("\n")
+        new_data = []
+
+        for i in rd[:29]:
+            new_data.append(i.split(","))
+
+        skill = self.skills[:29]
+        rank = []
+        level = []
+        experience = []
+        
+        for i in new_data:
+            rank.append(i[0])
+            level.append(i[1])
+            experience.append(i[2])
+
+        skills_data = list(zip(skill, rank, level, experience))
+        return skills_data
+            # for skill in skills_data[:29]:
+            #     x.add_row(skill)
+            # return x
+
 def chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
@@ -105,6 +138,17 @@ def get_items(category):
     x.field_names = ["Item", "Price"]
     for item in all_items:
         x.add_row(item)
+    return f"{x}"
+
+def get_skill_levels(player):
+
+    x = PrettyTable()
+    api = RuneScapeSkillScoreAPI()
+    all_scores = api.get_player_scores(player)
+
+    x.field_names = ["Skill", "Rank", "Level", "Experience"]
+    for score in all_scores:
+        x.add_row(score)
     return f"{x}"
 
 @client.event
@@ -123,6 +167,12 @@ async def on_message(message):
                 await message.channel.send(f"```\n{page}```")
             return
         await message.channel.send(f"```\n{data}```")
+    if message.content.startswith('$stats'):
+        player = message.content.replace("$stats", "").strip()
+        data = get_skill_levels(player)
+
+
+    await message.channel.send(f"```\n{data}```")
 
 
 
