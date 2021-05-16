@@ -169,8 +169,8 @@ async def on_message(message):
         await message.channel.send(f"```\n{data}```")
     if message.content.startswith('$stats'):
         player = message.content.replace("$stats", "").strip()
-        data = get_skill_levels(player)
-    await message.channel.send(f"```\n{data}```")
+        levels = get_skill_levels(player)
+    await message.channel.send(f"```\n{levels}```")
 
 
 
