@@ -80,7 +80,7 @@ class RuneScapeAPI:
         except:
             return []
         for v in results["items"]:
-            k = (v["name"], v["current"]["price"])
+            k = (v["name"], str(v["current"]["price"]))
             data.append(k)
         return data
 
@@ -136,9 +136,10 @@ def get_items(category):
     all_items = api.all(category)
 
     x.field_names = ["Item", "Price"]
+    x.sortby = "Price"
     for item in all_items:
         x.add_row(item)
-    return f"{x}"
+    return f"{x.get_string(sortby='Price', reversesort=True)}"
 
 def get_skill_levels(player):
 
